@@ -1,0 +1,235 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  background: #0f172a;
+  color: #e5e7eb;
+  height: 100vh;
+}
+
+.screen {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Buttons */
+
+.btn {
+  border: none;
+  border-radius: 6px;
+  padding: 0.8rem 1.6rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
+}
+
+.btn.primary {
+  background: #22c55e;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.btn.primary:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+}
+
+.btn.secondary {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
+.btn.secondary:hover {
+  background: #374151;
+  transform: translateY(-1px);
+}
+
+.btn.small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+/* Menu */
+
+.menu-container {
+  text-align: center;
+  max-width: 600px;
+  padding: 2rem 3rem;
+  background: #020617;
+  border-radius: 16px;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6);
+}
+
+.menu-container h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: #9ca3af;
+  margin-bottom: 2rem;
+}
+
+.menu-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.scores-info p {
+  color: #9ca3af;
+}
+
+/* Game layout */
+
+#game-screen {
+  flex-direction: column;
+  padding: 1.5rem 3rem;
+}
+
+.game-header {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto 1.5rem;
+}
+
+.score-wrapper {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.game-main {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Play area */
+
+#play-area {
+  position: relative;
+  width: 600px;
+  height: 400px;
+  border-radius: 12px;
+  border: 2px solid #4b5563;
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  overflow: hidden;
+}
+
+#falling-word {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  font-size: 2.2rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* Letters container */
+
+#letters-container {
+  display: flex;
+  gap: 0.5rem;
+  min-height: 60px;
+}
+
+.letter-box {
+  width: 45px;
+  height: 55px;
+  border-radius: 8px;
+  border: 2px solid #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  text-transform: uppercase;
+}
+
+.letter-box.filled {
+  background: #111827;
+  border-color: #6b7280;
+}
+
+.letter-box.wrong {
+  border-color: #ef4444;
+}
+
+.hint {
+  color: #9ca3af;
+}
+
+/* Overlays (guidelines + game over) */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-content {
+  background: #020617;
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  max-width: 600px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+.overlay-content h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.overlay-content p {
+  margin-bottom: 0.5rem;
+}
+
+.overlay-buttons {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.guidelines-list {
+  margin: 1rem 0 1.5rem;
+  text-align: left;
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+.guidelines-list ul {
+  list-style: circle;
+  padding-left: 1.5rem;
+  margin-top: 0.3rem;
+}

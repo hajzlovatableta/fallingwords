@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Falling Words Typing Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- MAIN MENU SCREEN -->
+  <div id="menu-screen" class="screen">
+    <div class="menu-container">
+      <h1>Falling Words</h1>
+      <p class="subtitle">Type the words before they hit the bottom!</p>
+
+      <div class="menu-buttons">
+        <button id="start-btn" class="btn primary">Start</button>
+        <button id="guidelines-btn" class="btn secondary">Guidelines</button>
+      </div>
+
+      <div class="scores-info">
+        <p>Best score: <span id="best-score-menu">0</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="screen hidden">
+    <header class="game-header">
+      <button id="back-to-menu" class="btn secondary small">Main menu</button>
+      <div class="score-wrapper">
+        <span>Score: <span id="current-score">0</span></span>
+        <span>Best: <span id="best-score-game">0</span></span>
+        <span>Time: <span id="time-elapsed">00:00</span></span>
+        <span>BPS: <span id="bps">0.00</span></span>
+      </div>
+    </header>
+
+    <main class="game-main">
+      <div id="play-area">
+        <div id="falling-word"></div>
+        <!-- bottom line is simply the bottom of this container -->
+      </div>
+
+      <div id="letters-container">
+        <!-- letter boxes will be generated here -->
+      </div>
+
+      <p class="hint">Type letters on your keyboard. Use Backspace to correct mistakes.</p>
+    </main>
+
+    <!-- GAME OVER OVERLAY -->
+    <div id="game-over-overlay" class="overlay hidden">
+      <div class="overlay-content">
+        <h2>Game over :(</h2>
+        <p>Your score: <span id="final-score">0</span></p>
+        <p>Best score: <span id="final-best-score">0</span></p>
+        <div class="overlay-buttons">
+          <button id="play-again-btn" class="btn primary">Play again</button>
+          <button id="overlay-menu-btn" class="btn secondary">Main menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUIDELINES MODAL -->
+  <div id="guidelines-modal" class="overlay hidden">
+    <div class="overlay-content">
+      <h2>How to play</h2>
+      <p>
+        Words will fall down from the top of the box.<br />
+        Your goal is to type the word before it reaches the bottom.
+      </p>
+      <ul class="guidelines-list">
+        <li>A new word appears in the falling box.</li>
+        <li>Below the box, you see empty letter slots – one for each letter.</li>
+        <li>Start typing on your keyboard:
+          <ul>
+            <li>Each letter you type fills the next slot.</li>
+            <li>If a letter is wrong, its box gets a red outline.</li>
+            <li>The word is accepted only when all letters are correct.</li>
+          </ul>
+        </li>
+        <li>For every correctly typed word you get +1 score.</li>
+        <li>If the word touches the bottom of the box: game over.</li>
+      </ul>
+      <p>Try to beat your best score!</p>
+      <button id="close-guidelines" class="btn primary">Close</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
