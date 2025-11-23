@@ -427,6 +427,7 @@ window.addEventListener("DOMContentLoaded", function () {
     score = 0;
     bps=0;
     elapsedMs=0;
+    totalTypedCharacters=0;
     showScreen("game")
     spawnNewWord();
     animateFalling();
