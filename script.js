@@ -48,6 +48,7 @@ let gameStartTimeMs = 0;      // when this game started (in milliseconds)
 let timerIntervalId = null;   // id of setInterval for the timer
 let totalTypedCharacters = 0; // how many letters the player typed in this run
 
+var totalS = 0;
 
 // 3. WE WAIT UNTIL THE HTML PAGE IS LOADED, THEN WE RUN OUR GAME SETUP
 // --------------------------------------------------------------------
@@ -74,6 +75,8 @@ window.addEventListener("DOMContentLoaded", function () {
   const playArea = document.getElementById("play-area");
   const fallingWordEl = document.getElementById("falling-word");
 
+  const animationEl = document.getElementById('word-animation');
+
   // 3.1.6 Letter boxes below the play area
   const lettersContainer = document.getElementById("letters-container");
 
@@ -93,20 +96,59 @@ window.addEventListener("DOMContentLoaded", function () {
   const timeElapsedEl = document.getElementById("time-elapsed");
   const bpsEl = document.getElementById("bps");
 
+  // 5.2.3 Reset timer and BPS display to zero.
+  updateTimerAndBps(0);
+
+  var typedLetters = '';
+
+  loadBestScore();
+
+  function updateScoreUI() {
+    currentScoreEl.innerHTML = score;
+    bestScoreGameEl.innerHTML = bestScore;
+  }
+
 
   // 4. SMALL HELPER: SHOW MENU OR GAME SCREEN
   // -----------------------------------------
   function showScreen(whichScreen) {
     // 4.1 If whichScreen is "menu", we show the menu and hide the game.
     if (whichScreen === "menu") {
+      isGameRunning = false;
       menuScreen.classList.remove("hidden");
       gameScreen.classList.add("hidden");
+      guidelinesModal.classList.add('hidden');
     }
 
     // 4.2 If whichScreen is "game", we show the game and hide the menu.
     if (whichScreen === "game") {
+      startBtn.innerText = 'Continue'
+      isGameRunning = true;
       menuScreen.classList.add("hidden");
       gameScreen.classList.remove("hidden");
+      gameOverOverlay.classList.add("hidden");
+      guidelinesModal.classList.add('hidden');
+
+    }
+
+    if (whichScreen === 'over') {
+      isGameRunning = false;
+      gameOverOverlay.classList.remove("hidden");
+
+      playAgainBtn.onclick = initGame;
+      finalScoreEl.innerHTML = score;
+      finalBestScoreEl.innerHTML = bestScore;
+      overlayMenuBtn.onclick = function () {
+        showScreen('menu')
+      }
+    }
+
+    if (whichScreen === 'guidelines') {
+      isGameRunning = false;
+      gameOverOverlay.classList.add("hidden");
+      menuScreen.classList.add("hidden");
+
+      guidelinesModal.classList.remove('hidden')
     }
   }
 
@@ -114,8 +156,10 @@ window.addEventListener("DOMContentLoaded", function () {
   // 5. FUNCTIONS FOR THE TIMER AND BPS (LETTERS PER SECOND)
   // -------------------------------------------------------
 
+  var elapsedMs = 0;
+
   // 5.1 This function updates the visible time and BPS text.
-  function updateTimerAndBps(elapsedMs) {
+  function updateTimerAndBps() {
     if (!timeElapsedEl || !bpsEl) {
       return; // safety, if HTML is missing
     }
@@ -153,8 +197,7 @@ window.addEventListener("DOMContentLoaded", function () {
       clearInterval(timerIntervalId);
     }
 
-    // 5.2.3 Reset timer and BPS display to zero.
-    updateTimerAndBps(0);
+
 
     // 5.2.4 Every 100 ms we update the display.
     timerIntervalId = setInterval(function () {
@@ -163,7 +206,7 @@ window.addEventListener("DOMContentLoaded", function () {
       }
 
       const now = Date.now();
-      const elapsedMs = now - gameStartTimeMs;
+      elapsedMs = now - gameStartTimeMs;
       updateTimerAndBps(elapsedMs);
     }, 100);
   }
@@ -193,6 +236,7 @@ window.addEventListener("DOMContentLoaded", function () {
     } else {
       bestScore = 0;
     }
+    updateBestScoreUI();
   }
 
   // 6.2 Save best score into browser localStorage.
@@ -223,7 +267,7 @@ window.addEventListener("DOMContentLoaded", function () {
     fallingWordEl.textContent = currentWord.toUpperCase();
 
     // 7.1.4 Put the word at the top (y = 0).
-    wordY = 0;
+    wordY = -50;
     fallingWordEl.style.top = wordY + "px";
 
     // 7.1.5 Create empty boxes for each letter of this word.
@@ -236,6 +280,7 @@ window.addEventListener("DOMContentLoaded", function () {
     lettersContainer.innerHTML = "";
 
     // 7.2.2 Create "length" many boxes.
+    console.log('logging')
     for (let i = 0; i < length; i++) {
       const box = document.createElement("div");
       box.classList.add("letter-box");
@@ -266,6 +311,8 @@ window.addEventListener("DOMContentLoaded", function () {
         // 7.3.5 If the letter is wrong, mark it with the "wrong" class.
         if (letter !== currentWord[i]) {
           box.classList.add("wrong");
+        } else {
+          totalTypedCharacters++;
         }
       }
     }
@@ -282,6 +329,8 @@ window.addEventListener("DOMContentLoaded", function () {
     if (typedLetters === currentWord) {
       // 7.4.3 Increase score and update text.
       score++;
+      if (score > bestScore) bestScore = score;
+      saveBestScore();
       updateScoreUI();
 
       // 7.4.4 Increase fall speed a little, but do not go over MAX_FALL_SPEED.
@@ -292,35 +341,174 @@ window.addEventListener("DOMContentLoaded", function () {
 
       // 7.4.5 Create a new word.
       spawnNewWord();
+      animateSuccessfullDeletion();
     }
     // 7.4.6 If letters are not correct, we do nothing here.
     //       The red boxes already show the mistake.
   }
-}
+
+
+
+
 
   // 8. FUNCTIONS FOR FALLING ANIMATION
   // ----------------------------------
 
 
+
+  async function animateFalling() {
+    if (fallingWordEl != undefined) {
+      const time = 25 - score / 2;
+      const distance = score > 0 ? 1 + score / 2 : 1;
+      if (isGameRunning) {
+
+
+        fallingWordEl.style.top = (Number)(fallingWordEl.style.top.split('p')[0]) + distance + 'px';
+
+        if ((Number)(fallingWordEl.style.top.split('p')[0]) > 400) {
+          spawnNewWord();
+          score--;
+          animateHittingBottom();
+          if (score <= -5) initGameOver();
+          updateScoreUI();
+        }
+
+      }
+
+      await new Promise(resolve => setTimeout(resolve, time));
+      animateFalling();
+    }
+  }
+
+  function animateSuccessfullDeletion() {
+    console.log('aaa');
+    animationEl.style.top = fallingWordEl.style.top;
+    animationEl.style.backgroundColor = 'rgba(60, 255, 0, 0.3)'
+    animationEl.style.transform = "scaleX(1.2)"
+    setTimeout(() => {
+
+      animationEl.style.backgroundColor = "rgba(0, 255, 42, 0)"
+      animationEl.style.transform = "scaleX(0.83)"
+
+    }, 200)
+  }
+  function animateHittingBottom() {
+    animationEl.style.transition = "background-color 0.2s ease-out, transform 0.2s ease-in";
+    animationEl.style.backgroundColor = "rgba(255,0,0,0)"; 
+    animationEl.style.transform = "scaleY(1) translateY(0)";
+
+    animationEl.style.height = "100px";
+    animationEl.style.top = '100%'
+    animationEl.style.transform = "scaleY(1.5)";
+    animationEl.style.backgroundColor = "rgba(255,0,0,0.3)";
+
+    setTimeout(() => {
+      animationEl.style.backgroundColor = "rgba(255,0,0,0)";
+    }, 200);
+
+    setTimeout(() => {
+      animationEl.style.transform = "scaleY(0.67)";
+    }, 600);
+  }
+
+
   // 9. SCORE AND GAME OVER LOGIC
   // ----------------------------
 
-  
+  function initGameOver() {
+    showScreen('over')
+  }
+
   // 10. STARTING AND STOPPING THE GAME
   // ----------------------------------
 
-  
+
+  function initGame() {
+    showScreen("game")
+    spawnNewWord();
+    animateFalling();
+    startTimer();
+  }
+
+
 
   // 11. INITIAL SETUP: LOAD BEST SCORE AND SET UI ON PAGE LOAD
   // ----------------------------------------------------------
-  
+
 
   // 12. BUTTON EVENTS (START, GUIDELINES, BACK, GAME OVER BUTTONS)
   // --------------------------------------------------------------
 
-  
+  backToMenuBtn.onclick = function () {
+    showScreen('menu');
+  };
+  startBtn.onclick = initGame;;
 
+  guidelinesBtn.onclick = function () {
+    showScreen('guidelines')
+  }
+  closeGuidelinesBtn.onclick = function () {
+    showScreen('menu')
+  }
   // 13. KEYBOARD INPUT: TYPING LETTERS AND BACKSPACE
   // ------------------------------------------------
 
+
+
+  document.addEventListener("keydown", function (e) {
+    e = e || window.event;
+    switch (e.keyCode) {
+      case 27://escape
+        if (menuScreen.className.includes('hidden')) {
+          showScreen('menu')
+        } else {
+          showScreen('game');
+        }
+        break;
+      case 8:
+        typedLetters = typedLetters.substring(0, typedLetters.length - 1);
+        updateLetterBoxes();
+      default:
+        if (isGameRunning && e.keyCode >= 65 && e.keyCode <= 90)//a - z
+        {
+          handleTyping(e.keyCode);
+        }
+        break;
+    }
+    // use e.keyCode
+  });
+
+  function handleTyping(keycode) {
+    let letter = String.fromCharCode(keycode + 32)
+
+    if (typedLetters.length < currentWord.length) {
+      typedLetters += letter;
+    }
+    updateLetterBoxes();
+    checkIfWordCompleted();
+
+
+
+    /*
+    if (focusedWordIndex == null) {
+      for (let i = 0; i < visibleWords.length; i++) {
+        if (visibleWords[i].charAt(0) == letter) {
+          focusedWordIndex = i;
+          removeFirstWordLetter();
+        }
+      }
+    } else {
+      if (visibleWords[focusedWordIndex].charAt(0) == letter) {
+        removeFirstWordLetter();
+      } else {
+        console.log('MISTAKE DETECTED')
+        resetMistake();
+      }
+    }
+      */
+  }
+
+
+
+}
 )
