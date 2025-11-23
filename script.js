@@ -367,7 +367,7 @@ window.addEventListener("DOMContentLoaded", function () {
 
         if ((Number)(fallingWordEl.style.top.split('p')[0]) > 400) {
           spawnNewWord();
-          score--;
+          initGameOver();
           animateHittingBottom();
           if (score <= -5) initGameOver();
           updateScoreUI();
@@ -424,6 +424,9 @@ window.addEventListener("DOMContentLoaded", function () {
 
 
   function initGame() {
+    score = 0;
+    bps=0;
+    elapsedMs=0;
     showScreen("game")
     spawnNewWord();
     animateFalling();
