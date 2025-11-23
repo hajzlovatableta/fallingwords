@@ -486,26 +486,6 @@ window.addEventListener("DOMContentLoaded", function () {
     }
     updateLetterBoxes();
     checkIfWordCompleted();
-
-
-
-    /*
-    if (focusedWordIndex == null) {
-      for (let i = 0; i < visibleWords.length; i++) {
-        if (visibleWords[i].charAt(0) == letter) {
-          focusedWordIndex = i;
-          removeFirstWordLetter();
-        }
-      }
-    } else {
-      if (visibleWords[focusedWordIndex].charAt(0) == letter) {
-        removeFirstWordLetter();
-      } else {
-        console.log('MISTAKE DETECTED')
-        resetMistake();
-      }
-    }
-      */
   }
 
 
