@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Falling Words Typing Game</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <!-- MAIN MENU SCREEN -->
   <div id="menu-screen" class="screen">
@@ -38,6 +40,7 @@
     <main class="game-main">
       <div id="play-area">
         <div id="falling-word"></div>
+        <div id="word-animation"></div>
         <!-- bottom line is simply the bottom of this container -->
       </div>
 
@@ -81,7 +84,9 @@
           </ul>
         </li>
         <li>For every correctly typed word you get +1 score.</li>
-        <li>If the word touches the bottom of the box: game over.</li>
+        <li>For every word that reaches the bottom you get -1 score.</li>
+        <li>If you reach -5 score the game is over.</li>
+
       </ul>
       <p>Try to beat your best score!</p>
       <button id="close-guidelines" class="btn primary">Close</button>
@@ -90,4 +95,5 @@
 
   <script src="script.js"></script>
 </body>
+
 </html>

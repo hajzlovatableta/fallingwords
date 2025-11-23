@@ -296,31 +296,230 @@ window.addEventListener("DOMContentLoaded", function () {
     // 7.4.6 If letters are not correct, we do nothing here.
     //       The red boxes already show the mistake.
   }
-}
+
 
   // 8. FUNCTIONS FOR FALLING ANIMATION
   // ----------------------------------
+  // 8.1 Start the falling loop (moves the word down each interval)
+  function startFalling() {
+    // make sure we do not create multiple intervals
+    if (fallIntervalId !== null) {
+      clearInterval(fallIntervalId);
+      fallIntervalId = null;
+    }
+
+    // every FALL_INTERVAL_MS milliseconds we update position
+    fallIntervalId = setInterval(function () {
+      if (!isGameRunning) return; // safety
+
+      // move the word down by the current speed
+      wordY += currentFallSpeed;
+      fallingWordEl.style.top = wordY + "px";
+
+      // check if the falling word reached the bottom of the play area
+      const playRect = playArea.getBoundingClientRect();
+      const wordRect = fallingWordEl.getBoundingClientRect();
+
+      // if bottom of the word >= bottom of play area -> game over
+      if (wordRect.bottom >= playRect.bottom - 2) {
+        // small tolerance (-2) to avoid off-by-one
+        // Stop the falling loop and trigger game over
+        clearInterval(fallIntervalId);
+        fallIntervalId = null;
+        gameOver(); // assume gameOver() implemented later (punto 9)
+      }
+    }, FALL_INTERVAL_MS);
+  }
+
+  // 8.2 Stop the falling loop
+  function stopFalling() {
+    if (fallIntervalId !== null) {
+      clearInterval(fallIntervalId);
+      fallIntervalId = null;
+    }
+  }
 
 
   // 9. SCORE AND GAME OVER LOGIC
   // ----------------------------
 
+  // 9.1 Update current score and check/update best score
+  function updateScoreUI() {
+    currentScoreEl.textContent = score;
+
+    // If new best score → save it
+    if (score > bestScore) {
+      bestScore = score;
+      saveBestScore();
+      updateBestScoreUI();
+    }
+  }
+
+  // 9.2 Reset all game state variables to start a fresh game
+  function resetGameState() {
+    score = 0;
+    typedLetters = "";
+    currentWord = "";
+    wordY = 0;
+    currentFallSpeed = START_FALL_SPEED;
+    totalTypedCharacters = 0;
+
+    // Reset UI
+    currentScoreEl.textContent = "0";
+    lettersContainer.innerHTML = "";
+    fallingWordEl.textContent = "";
+    fallingWordEl.style.top = "0px";
+
+    // Reset timer visually
+    timeElapsedEl.textContent = "00:00";
+    bpsEl.textContent = "0.00";
+  }
+
+  // 9.3 Game Over → stop everything and show overlay
+  function gameOver() {
+    // Stop game
+    isGameRunning = false;
+
+    // Stop falling animation
+    stopFalling();
+
+    // Stop timer
+    stopTimer();
+
+    // Show final scores
+    finalScoreEl.textContent = score;
+    finalBestScoreEl.textContent = bestScore;
+
+    // Show game over overlay
+    gameOverOverlay.classList.remove("hidden");
+  }
+
+
   
-  // 10. STARTING AND STOPPING THE GAME
+   // 10. STARTING AND STOPPING THE GAME
   // ----------------------------------
 
+  // 10.1 Start a new game
+  function startGame() {
+    // Hide Game Over overlay if it was visible
+    gameOverOverlay.classList.add("hidden");
+
+    // Show the game screen and hide the menu
+    showScreen("game");
+
+    // Reset all game values
+    resetGameState();
+
+    // Load best score UI (in case it changed)
+    updateBestScoreUI();
+
+    // Start the timer
+    startTimer();
+
+    // Start a new word
+    spawnNewWord();
+
+    // Start falling animation
+    startFalling();
+
+    // Activate game mode
+    isGameRunning = true;
+  }
+
+  // 10.2 Stop game and return to menu
+  function stopGameBackToMenu() {
+    isGameRunning = false;
+
+    // Stop falling and timer
+    stopFalling();
+    stopTimer();
+
+    // Hide game over overlay just in case
+    gameOverOverlay.classList.add("hidden");
+
+    // Go back to menu
+    showScreen("menu");
+  }
+
+
   
 
-  // 11. INITIAL SETUP: LOAD BEST SCORE AND SET UI ON PAGE LOAD
+   // 11. INITIAL SETUP: LOAD BEST SCORE AND SET UI ON PAGE LOAD
   // ----------------------------------------------------------
+
+  // 11.1 Load best score from localStorage
+  loadBestScore();
+
+  // 11.2 Update best score on menu and game UI
+  updateBestScoreUI();
+
+  // 11.3 Show the menu screen when the page loads
+  showScreen("menu");
+
   
 
   // 12. BUTTON EVENTS (START, GUIDELINES, BACK, GAME OVER BUTTONS)
   // --------------------------------------------------------------
 
-  
+  // 12.1 Start Game button in menu
+  startBtn.addEventListener("click", function () {
+    startGame();
+  });
+
+  // 12.2 Guidelines button in menu
+  guidelinesBtn.addEventListener("click", function () {
+    guidelinesModal.classList.remove("hidden");
+  });
+
+  // 12.3 Close Guidelines
+  closeGuidelinesBtn.addEventListener("click", function () {
+    guidelinesModal.classList.add("hidden");
+  });
+
+  // 12.4 Back to menu from game screen
+  backToMenuBtn.addEventListener("click", function () {
+    stopGameBackToMenu();
+  });
+
+  // 12.5 Play Again button in Game Over overlay
+  playAgainBtn.addEventListener("click", function () {
+    gameOverOverlay.classList.add("hidden");
+    startGame();
+  });
+
+  // 12.6 "Menu" button in Game Over overlay
+  overlayMenuBtn.addEventListener("click", function () {
+    gameOverOverlay.classList.add("hidden");
+    stopGameBackToMenu();
+  });
+
 
   // 13. KEYBOARD INPUT: TYPING LETTERS AND BACKSPACE
   // ------------------------------------------------
 
-)
+  document.addEventListener("keydown", function (event) {
+    if (!isGameRunning) return; // if game not running, ignore all keys
+
+    const key = event.key.toLowerCase();
+
+    // 13.1 BACKSPACE → delete last typed letter
+    if (key === "backspace") {
+      event.preventDefault(); // avoid browser navigating back
+      typedLetters = typedLetters.slice(0, -1);
+      updateLetterBoxes();
+      return;
+    }
+
+    // 13.2 Only accept a-z letters
+    if (key.length === 1 && key >= "a" && key <= "z") {
+      // Add letter if we still have space
+      if (typedLetters.length < currentWord.length) {
+        typedLetters += key;
+        totalTypedCharacters++;
+
+        updateLetterBoxes();
+        checkIfWordCompleted();
+      }
+    }
+  });
+});
